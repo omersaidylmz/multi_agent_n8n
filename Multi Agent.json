@@ -1,0 +1,431 @@
+{
+  "name": "Multi Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -320,
+        60
+      ],
+      "id": "fc706f9f-0e61-436d-80e9-6acecbfab485",
+      "name": "When chat message received",
+      "webhookId": "962f01a9-12a2-4e6c-8fae-efd74d77d54d"
+    },
+    {
+      "parameters": {
+        "toolDescription": "İnternetten bilgi çeker",
+        "method": "POST",
+        "url": "https://google.serper.dev/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json "
+            },
+            {
+              "name": "X-API-KEY",
+              "value": "serper_api_key"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"q\":\"{{ $json.chatInput }}\",\n  \"gl\":\"tr\",\n  \"hl\":\"tr\"} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        320
+      ],
+      "id": "f9660650-737f-41df-ab1b-e504f02b6626",
+      "name": "Bilgi"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        220,
+        320
+      ],
+      "id": "a6c0a6db-e898-48f4-ac2d-1aafa30a162e",
+      "name": "Gmail",
+      "webhookId": "b75e2dc2-40ea-42e8-9c0b-106611a13f64",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sbAKOMx4A6YVQ3KZ",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -20,
+        320
+      ],
+      "id": "2e74f65b-3b60-44da-880d-482df85de55f",
+      "name": "Memory"
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-4-scout-17b-16e-instruct",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -280,
+        320
+      ],
+      "id": "497ae0f9-f59e-42f8-9656-d1c928f20319",
+      "name": "LLM",
+      "credentials": {
+        "groqApi": {
+          "id": "6Ofx6fKr3CIvqThs",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Kanun",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "etikos4",
+          "mode": "list",
+          "cachedResultName": "etikos4"
+        },
+        "topK": 5,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        420,
+        320
+      ],
+      "id": "57afce3e-d64a-418e-ad87-61967898abd7",
+      "name": "Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "yUHP8pwN7NxyzYZq",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "embed-multilingual-v3.0"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsCohere",
+      "typeVersion": 1,
+      "position": [
+        420,
+        460
+      ],
+      "id": "57c78d2b-b51e-4f85-8de4-af26c8ab73f6",
+      "name": "Embeddings Cohere",
+      "credentials": {
+        "cohereApi": {
+          "id": "Hl1WcvFrKAdeCdQr",
+          "name": "CohereApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "repository",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Repository_Owner', ``, 'string') }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Repository_Name', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.githubTool",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        320
+      ],
+      "id": "52fc8c1a-99a3-46b1-8bde-bce73759ebd2",
+      "name": "Github",
+      "webhookId": "ac997645-a342-41dd-8ff5-a3405f3f5df4",
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "lBZK7Mfp3e58HC5B",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## TOOLS",
+        "height": 300,
+        "width": 820,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        100,
+        280
+      ],
+      "id": "8cfdcdd2-789e-4003-9888-a00968e06f57",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# Multi AI Agent\n## This project is an AI assistant that answers users' questions by integrating with AI-based tools.\n[Guide](https://docs.n8n.io/workflows/sticky-notes/)",
+        "height": 240,
+        "width": 300,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -660,
+        20
+      ],
+      "id": "33cbfe09-c0ca-44f7-9c16-d3d6a8034192",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "mode": "username",
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('User', ``, 'string') }}"
+        },
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_Text', ``, 'string') }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slackTool",
+      "typeVersion": 2.3,
+      "position": [
+        780,
+        320
+      ],
+      "id": "bfdb71c0-bf16-4cd9-9713-de4b04c289f9",
+      "name": "Slack",
+      "webhookId": "77c29143-40fb-445d-9490-7293f1141046",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "xJMgI9abMgoYs0uk",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## MEMORY",
+        "width": 220,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -140,
+        280
+      ],
+      "id": "66f4ce81-5313-4141-bde6-54ea8abdc9a3",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## LLM",
+        "width": 220,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        280
+      ],
+      "id": "9efd9359-bb33-46a7-a193-409d71476bf4",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "typeVersion": 1,
+      "position": [
+        220,
+        460
+      ],
+      "id": "0da80f5e-ad96-4d28-aafe-4117e881cf5f",
+      "name": "Wikipedia"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "İhtiyacın olduğunda Tüm araçları kullanabilirsin. Elinden geldikçe yardımcı ol. Adın Jarvis. Hukuki anlamda sorulan sorular için Kararlar ile alakalı bilgi almak adına vektör veri tabanından bak ve konu ile ilgili en alakalı kararı esas ve karar numarasını ve text in özet bilgisini kullanıcıya ver."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        60
+      ],
+      "id": "c53b7a0f-86f1-4dec-b62f-716871ff4552",
+      "name": "Multi AI Agent"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Multi AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bilgi": {
+      "ai_tool": [
+        [
+          {
+            "node": "Multi AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "Multi AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Multi AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Multi AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Multi AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Cohere": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Github": {
+      "ai_tool": [
+        [
+          {
+            "node": "Multi AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack": {
+      "ai_tool": [
+        [
+          {
+            "node": "Multi AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia": {
+      "ai_tool": [
+        [
+          {
+            "node": "Multi AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6b99ff1c-422d-4f25-b8a2-9f72de585d9c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cea23cfb238b3d7e3e6d31d1dee728319d90e41eef51291b1dea2533022bd257"
+  },
+  "id": "jDWG6olqxiIDXDdr",
+  "tags": []
+}
