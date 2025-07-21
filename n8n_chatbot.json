@@ -1,0 +1,273 @@
+{
+  "name": "n8n_chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -420,
+        -80
+      ],
+      "id": "8a06437f-87a6-430b-8823-81b28fc8edc3",
+      "name": "Telegram Trigger",
+      "webhookId": "58b9b733-6fb9-4903-9693-00afe2fa2b8c",
+      "credentials": {
+        "telegramApi": {
+          "id": "mYhn6DaIkGgQfkd0",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "Sen yardımsever bir asistan olarak gerekli araçları kullanarak en doğru cevabı veriyorsun. Kibar bir üslup ile konuşmaya başla ve bitir. Altın ile ilgili bir bilgi istendiğinde Altın ve Döviz gibi değerli maden ve paraların fiyatı sorulduğunda Altın aracına bakarak, bilmediğin diğer şeylerde ise genel bilgiler, hava durumu vs için  Bilgi aracına bakarak oradan aldığın bilgilere göre cevap ver. Ürün fiyatları sorulduğunda Market aracına bakarak cevabı verirsin. HATIRLATMA :\nSana bir market ürününün fiyatı sorulduğunda bunu araçta ürünün adı ile ara örneğin salçanın fiyatı sorulduğunda bunu Market aracında \"salça\" kelimesi ile ara ve 3 farklı marketten fiyat getir"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -120,
+        -80
+      ],
+      "id": "d2be8c23-2679-42b6-9f78-eea68d575468",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -160,
+        140
+      ],
+      "id": "43343122-42af-4098-bfd1-f9604a0b6656",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.marketfiyati.org.tr/api/v2/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Origin",
+              "value": "https://api.marketfiyati.org.tr"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"keywords\": \" {{ $json.message.text }}\", \n  \"pages\": 0,\n  \"size\": 24,\n  \"depots\": [\n    \"bim-U069\", \"a101-B060\", \"a101-E505\", \"a101-F266\",\n    \"sok-13936\", \"sok-11049\", \"tarim_kredi-5549\"\n  ],\n  \"distance\": 1,\n  \"latitude\": 40.6700644304647,\n  \"longitude\": 29.3287105648449\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        140
+      ],
+      "id": "e27bc777-672a-40cc-ac18-5fa347f9c3ec",
+      "name": "Market"
+    },
+    {
+      "parameters": {
+        "url": "https://canlipiyasalar.haremaltin.com/tmp/doviz.json?dil_kodu=tr",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        180,
+        140
+      ],
+      "id": "b190bde8-1951-4fc6-8c33-d2db943d3ad3",
+      "name": "Altın"
+    },
+    {
+      "parameters": {
+        "model": "moonshotai/kimi-k2-instruct",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        140
+      ],
+      "id": "311d420c-44d5-4e4c-bc54-379c13a4e0c3",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "6Ofx6fKr3CIvqThs",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        -80
+      ],
+      "id": "ffadcebe-e1b9-442d-af3e-b9fd1072b63f",
+      "name": "Send a text message",
+      "webhookId": "66a03bd7-b1ab-43f0-9fb2-76e134e2a79b",
+      "credentials": {
+        "telegramApi": {
+          "id": "mYhn6DaIkGgQfkd0",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://google.serper.dev/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": " application/json"
+            },
+            {
+              "name": "X-API-KEY",
+              "value": "c8af81100ac88109a46973ea5f42afaa48dad372"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"q\":\"{{ $json.message.text }}\",\n  \"gl\":\"tr\",\n  \"hl\":\"tr\",\n  \"num\":20} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        360,
+        140
+      ],
+      "id": "c1ea6102-4e6e-436d-b6db-de050cf40b9d",
+      "name": "Bilgi"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Market": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Altın": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bilgi": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "23bf0ad8-504e-4246-85c3-5060d1faf6d7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cea23cfb238b3d7e3e6d31d1dee728319d90e41eef51291b1dea2533022bd257"
+  },
+  "id": "83kgX5WTA16nGrES",
+  "tags": []
+}
